@@ -11,8 +11,8 @@ RSpec.describe "Trainspotter filtering" do
     end
 
     it "can be customized" do
-      Trainspotter.filtered_paths = [%r{^/custom/}]
-      expect(Trainspotter.filtered_paths).to eq([%r{^/custom/}])
+      Trainspotter.filtered_paths = [ %r{^/custom/} ]
+      expect(Trainspotter.filtered_paths).to eq([ %r{^/custom/} ])
     end
   end
 
@@ -50,7 +50,7 @@ RSpec.describe "Trainspotter filtering" do
     end
 
     it "respects custom filters" do
-      Trainspotter.filtered_paths = [%r{^/admin/}]
+      Trainspotter.filtered_paths = [ %r{^/admin/} ]
       expect(Trainspotter.filter_request?("/admin/dashboard")).to be true
       expect(Trainspotter.filter_request?("/assets/app.js")).to be false
     end
@@ -58,7 +58,7 @@ RSpec.describe "Trainspotter filtering" do
 
   describe ".reset_filters!" do
     it "restores default filters" do
-      Trainspotter.filtered_paths = [%r{^/custom/}]
+      Trainspotter.filtered_paths = [ %r{^/custom/} ]
       Trainspotter.reset_filters!
       expect(Trainspotter.filtered_paths).to eq(Trainspotter::DEFAULT_FILTERED_PATHS)
     end

@@ -65,7 +65,7 @@ module Trainspotter
         chunk_size = 8192
 
         while lines.size < count && file.pos > 0
-          read_size = [chunk_size, file.pos].min
+          read_size = [ chunk_size, file.pos ].min
           file.seek(-read_size, IO::SEEK_CUR)
           chunk = file.read(read_size)
           file.seek(-read_size, IO::SEEK_CUR)

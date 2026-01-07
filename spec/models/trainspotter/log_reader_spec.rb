@@ -79,7 +79,7 @@ RSpec.describe Trainspotter::LogReader do
       reader = described_class.new("test.log")
       lines = reader.read_new_lines
 
-      expect(lines.map(&:strip)).to eq(["line 1", "line 2"])
+      expect(lines.map(&:strip)).to eq([ "line 1", "line 2" ])
     end
 
     it "returns only new lines on subsequent reads" do
@@ -91,7 +91,7 @@ RSpec.describe Trainspotter::LogReader do
       File.open(log_file, "a") { |f| f.write("line 2\nline 3\n") }
       new_lines = reader.read_new_lines
 
-      expect(new_lines.map(&:strip)).to eq(["line 2", "line 3"])
+      expect(new_lines.map(&:strip)).to eq([ "line 2", "line 3" ])
     end
 
     it "handles file truncation (log rotation)" do
@@ -104,7 +104,7 @@ RSpec.describe Trainspotter::LogReader do
       File.write(log_file, "new line 1\n")
       new_lines = reader.read_new_lines
 
-      expect(new_lines.map(&:strip)).to eq(["new line 1"])
+      expect(new_lines.map(&:strip)).to eq([ "new line 1" ])
     end
   end
 

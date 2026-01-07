@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Trainspotter::SilentRequest do
-  let(:app) { ->(env) { [200, {}, ["OK"]] } }
+  let(:app) { ->(env) { [ 200, {}, [ "OK" ] ] } }
   let(:middleware) { described_class.new(app) }
 
   describe "#call" do

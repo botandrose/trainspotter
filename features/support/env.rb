@@ -22,7 +22,7 @@ After do
 end
 
 Capybara.register_driver(:cuprite) do |app|
-  Capybara::Cuprite::Driver.new(app, window_size: [1280, 800], headless: true)
+  Capybara::Cuprite::Driver.new(app, window_size: [ 1280, 800 ], headless: true)
 end
 
 Capybara.default_driver = :rack_test

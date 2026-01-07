@@ -104,11 +104,11 @@ Then("the log selector should show {string} as selected") do |filename|
 end
 
 Then("I should see {string} in the log selector") do |filename|
-  expect(page).to have_select("log_file", with_options: [filename])
+  expect(page).to have_select("log_file", with_options: [ filename ])
 end
 
 Then("I should not see {string} in the log selector") do |filename|
-  expect(page).not_to have_select("log_file", with_options: [filename])
+  expect(page).not_to have_select("log_file", with_options: [ filename ])
 end
 
 When("I select {string} from the log selector") do |filename|
@@ -128,12 +128,12 @@ def generate_request_log(method:, path:, status:, timestamp_offset: 0)
   controller = path.gsub("/", "").capitalize + "Controller"
   action = method == "GET" ? "index" : "create"
   status_text = case status
-                when 200 then "OK"
-                when 302 then "Found"
-                when 404 then "Not Found"
-                when 500 then "Internal Server Error"
-                else "Unknown"
-                end
+  when 200 then "OK"
+  when 302 then "Found"
+  when 404 then "Not Found"
+  when 500 then "Internal Server Error"
+  else "Unknown"
+  end
 
   <<~LOG
     Started #{method} "#{path}" for 127.0.0.1 at #{timestamp}

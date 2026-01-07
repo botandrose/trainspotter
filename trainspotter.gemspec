@@ -3,8 +3,8 @@ require_relative "lib/trainspotter/version"
 Gem::Specification.new do |spec|
   spec.name        = "trainspotter"
   spec.version     = Trainspotter::VERSION
-  spec.authors     = ["Micah Geisel"]
-  spec.email       = ["micah@botandrose.com"]
+  spec.authors     = [ "Micah Geisel" ]
+  spec.email       = [ "micah@botandrose.com" ]
   spec.homepage    = "https://github.com/botandrose/trainspotter"
   spec.summary     = "Zero-config web-based Rails log viewer with request grouping"
   spec.description = "A mountable Rails engine that provides a beautiful web interface for viewing and understanding your Rails logs. Groups requests with their SQL queries and view renders, with real-time updates."

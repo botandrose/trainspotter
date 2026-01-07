@@ -48,7 +48,7 @@ RSpec.describe Trainspotter do
       FileUtils.touch(log_dir.join("alpha.log"))
       FileUtils.touch(log_dir.join("beta.log"))
 
-      expect(described_class.available_log_files).to eq(["alpha.log", "beta.log", "zebra.log"])
+      expect(described_class.available_log_files).to eq([ "alpha.log", "beta.log", "zebra.log" ])
     end
   end
 

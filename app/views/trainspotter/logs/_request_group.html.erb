@@ -1,0 +1,51 @@
+<details class="request-group <%= group.status_class %>" <%= "open" unless group.completed? %>>
+  <summary class="request-summary">
+    <span class="request-method method-<%= group.method.downcase %>"><%= group.method %></span>
+    <span class="request-path"><%= group.path %></span>
+    <% if group.controller %>
+      <span class="request-controller"><%= group.controller %>#<%= group.action %></span>
+    <% end %>
+    <span class="request-meta">
+      <% if group.status %>
+        <span class="request-status status-<%= group.status_class %>"><%= group.status %></span>
+      <% end %>
+      <% if group.duration_ms %>
+        <span class="request-duration"><%= "%.1f" % group.duration_ms %>ms</span>
+      <% end %>
+      <% if group.sql_count > 0 %>
+        <span class="request-sql" title="<%= group.sql_count %> queries, <%= "%.1f" % group.sql_duration_ms %>ms">
+          🗃️ <%= group.sql_count %>
+        </span>
+      <% end %>
+      <% if group.render_count > 0 %>
+        <span class="request-renders" title="<%= group.render_count %> templates, <%= "%.1f" % group.render_duration_ms %>ms">
+          📄 <%= group.render_count %>
+        </span>
+      <% end %>
+    </span>
+    <% if group.started_at %>
+      <time class="request-time" datetime="<%= group.started_at.iso8601 %>">
+        <%= group.started_at.strftime("%H:%M:%S") %>
+      </time>
+    <% end %>
+  </summary>
+
+  <div class="request-details">
+    <% group.entries.each do |entry| %>
+      <div class="log-entry entry-<%= entry.type %>">
+        <% case entry.type %>
+        <% when :sql %>
+          <span class="entry-badge sql">SQL</span>
+          <span class="entry-duration"><%= "%.2f" % entry.duration_ms %>ms</span>
+          <code class="entry-content"><%= ansi_to_html(entry.metadata[:query]) %></code>
+        <% when :render %>
+          <span class="entry-badge render">VIEW</span>
+          <span class="entry-duration"><%= "%.2f" % entry.duration_ms %>ms</span>
+          <span class="entry-content"><%= ansi_to_html(entry.metadata[:template]) %></span>
+        <% else %>
+          <pre class="entry-raw"><%= ansi_to_html(entry.raw) %></pre>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</details>

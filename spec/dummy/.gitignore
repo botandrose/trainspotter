@@ -26,7 +26,6 @@
 /db/*.sqlite3-wal
 /db/*.sqlite3-shm
 /db/data.*
-/config/database.yml
 
 # Ignore storage (uploaded files in development and any SQLite databases).
 /storage/*

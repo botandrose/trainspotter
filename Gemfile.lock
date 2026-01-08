@@ -3,6 +3,7 @@ PATH
   specs:
     trainspotter (0.1.0)
       rails (>= 7.0)
+      sqlite3
 
 GEM
   remote: https://rubygems.org/

@@ -48,7 +48,7 @@
   const connectionStatus = document.getElementById('connection-status');
   const logFileSelector = document.getElementById('log_file');
   const ipFilterSelector = document.getElementById('ip_filter');
-  let position = <%= @reader.instance_variable_get(:@file_position) %>;
+  let lastRequestId = '<%= @groups.last&.id || "" %>';
   let currentLogFile = '<%= @current_log_file %>';
   let currentIp = '<%= @current_ip || "" %>';
   let polling = true;
@@ -70,8 +70,8 @@
     if (!polling) return;
 
     const params = new URLSearchParams();
-    params.set('position', position);
     params.set('log_file', currentLogFile);
+    if (lastRequestId) params.set('last_request_id', lastRequestId);
     if (currentIp) params.set('ip', currentIp);
 
     const url = '<%= poll_logs_path %>?' + params.toString();
@@ -87,7 +87,9 @@
           const emptyState = document.querySelector('.empty-state');
           if (emptyState) emptyState.remove();
         }
-        position = data.position;
+        if (data.last_request_id) {
+          lastRequestId = data.last_request_id;
+        }
         connectionStatus.classList.remove('disconnected');
         connectionStatus.classList.add('connected');
       })

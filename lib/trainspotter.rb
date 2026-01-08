@@ -45,6 +45,22 @@ module Trainspotter
       group.controller&.start_with?("Trainspotter::")
     end
 
+    def recent_request_limit
+      @recent_request_limit || 100
+    end
+
+    def recent_request_limit=(limit)
+      @recent_request_limit = limit
+    end
+
+    def database_path
+      @database_path || Rails.root.join("tmp", "trainspotter.sqlite3").to_s
+    end
+
+    def database_path=(path)
+      @database_path = path
+    end
+
     def reset_filters!
       @filtered_paths = DEFAULT_FILTERED_PATHS.dup
     end

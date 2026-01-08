@@ -41,6 +41,10 @@ module Trainspotter
       filtered_paths.any? { |pattern| pattern.match?(path) }
     end
 
+    def internal_request?(group)
+      group.controller&.start_with?("Trainspotter::")
+    end
+
     def reset_filters!
       @filtered_paths = DEFAULT_FILTERED_PATHS.dup
     end

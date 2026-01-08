@@ -36,7 +36,9 @@ module Trainspotter
     end
 
     def filter_groups(groups)
-      groups.reject { |group| Trainspotter.filter_request?(group.path) }
+      groups.reject do |group|
+        Trainspotter.filter_request?(group.path) || Trainspotter.internal_request?(group)
+      end
     end
 
     def filter_by_ip(groups, ip = @current_ip)

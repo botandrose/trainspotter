@@ -11,7 +11,8 @@ module Trainspotter
       request_start: /^Started (?<method>GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS) "(?<path>[^"]+)" for (?<ip>[\d.]+) at (?<timestamp>.+)$/,
 
       # Processing by PostsController#index as HTML
-      processing: /^Processing by (?<controller>\w+)#(?<action>\w+) as (?<format>\w+)/,
+      # Also handles namespaced controllers like Trainspotter::LogsController
+      processing: /^Processing by (?<controller>[\w:]+)#(?<action>\w+) as (?<format>\w+|\*\/\*)/,
 
       # Post Load (0.5ms)  SELECT "posts".* FROM "posts"
       sql: /^\s*(?<name>[\w\s]+) \((?<duration>[\d.]+)ms\)\s+(?<query>.+)$/,

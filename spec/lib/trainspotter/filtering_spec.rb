@@ -63,4 +63,23 @@ RSpec.describe "Trainspotter filtering" do
       expect(Trainspotter.filtered_paths).to eq(Trainspotter::DEFAULT_FILTERED_PATHS)
     end
   end
+
+  describe ".internal_request?" do
+    let(:group) { instance_double(Trainspotter::RequestGroup) }
+
+    it "returns true for Trainspotter controllers" do
+      allow(group).to receive(:controller).and_return("Trainspotter::LogsController")
+      expect(Trainspotter.internal_request?(group)).to be true
+    end
+
+    it "returns false for other controllers" do
+      allow(group).to receive(:controller).and_return("PostsController")
+      expect(Trainspotter.internal_request?(group)).to be false
+    end
+
+    it "returns falsey when controller is nil" do
+      allow(group).to receive(:controller).and_return(nil)
+      expect(Trainspotter.internal_request?(group)).to be_falsey
+    end
+  end
 end

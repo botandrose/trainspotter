@@ -215,4 +215,93 @@ RSpec.describe Trainspotter::LogParser do
       expect(groups.size).to eq(1) # only first request fits in 2 lines
     end
   end
+
+  describe "tagged logger support" do
+    let(:parser) { described_class.new }
+
+    context "with request ID tags" do
+      it "parses lines with request ID prefix" do
+        lines = [
+          '[abc123] Started GET "/posts" for 127.0.0.1 at 2024-01-06 10:00:00 +0000',
+          "[abc123] Processing by PostsController#index as HTML",
+          "[abc123] Completed 200 OK in 50ms"
+        ]
+
+        groups = parser.parse_lines(lines)
+
+        expect(groups.size).to eq(1)
+        expect(groups.first.method).to eq("GET")
+        expect(groups.first.path).to eq("/posts")
+        expect(groups.first.status).to eq(200)
+        expect(groups.first.id).to eq("abc123")
+      end
+
+      it "correctly groups interleaved requests by request ID" do
+        lines = [
+          '[req-1] Started GET "/posts" for 127.0.0.1 at 2024-01-06 10:00:00 +0000',
+          '[req-2] Started POST "/users" for 127.0.0.1 at 2024-01-06 10:00:00 +0000',
+          '[req-1] Processing by PostsController#index as HTML',
+          '[req-2] Processing by UsersController#create as JSON',
+          '  [req-1] Post Load (0.5ms)  SELECT "posts".* FROM "posts"',
+          '  [req-2] User Create (1.2ms)  INSERT INTO "users"',
+          "[req-2] Completed 201 Created in 30ms",
+          "[req-1] Completed 200 OK in 50ms"
+        ]
+
+        groups = parser.parse_lines(lines)
+
+        expect(groups.size).to eq(2)
+
+        req2_group = groups.find { |g| g.id == "req-2" }
+        req1_group = groups.find { |g| g.id == "req-1" }
+
+        expect(req1_group.method).to eq("GET")
+        expect(req1_group.path).to eq("/posts")
+        expect(req1_group.controller).to eq("PostsController")
+        expect(req1_group.status).to eq(200)
+        expect(req1_group.sql_count).to eq(1)
+
+        expect(req2_group.method).to eq("POST")
+        expect(req2_group.path).to eq("/users")
+        expect(req2_group.controller).to eq("UsersController")
+        expect(req2_group.status).to eq(201)
+        expect(req2_group.sql_count).to eq(1)
+      end
+
+      it "handles UUID-style request IDs" do
+        lines = [
+          '[5de6cb4c-4a8e-4d87-bafd-3ce2281e26f4] Started GET "/posts" for 127.0.0.1 at 2024-01-06 10:00:00 +0000',
+          "[5de6cb4c-4a8e-4d87-bafd-3ce2281e26f4] Completed 200 OK in 50ms"
+        ]
+
+        groups = parser.parse_lines(lines)
+
+        expect(groups.size).to eq(1)
+        expect(groups.first.id).to eq("5de6cb4c-4a8e-4d87-bafd-3ce2281e26f4")
+      end
+
+      it "marks groups as completed when request_end is seen" do
+        lines = [
+          '[req-1] Started GET "/posts" for 127.0.0.1 at 2024-01-06 10:00:00 +0000',
+          "[req-1] Completed 200 OK in 50ms"
+        ]
+
+        groups = parser.parse_lines(lines)
+
+        expect(groups.first.completed?).to be true
+      end
+
+      it "handles incomplete tagged requests at end of log" do
+        lines = [
+          '[req-1] Started GET "/posts" for 127.0.0.1 at 2024-01-06 10:00:00 +0000',
+          "[req-1] Processing by PostsController#index as HTML"
+        ]
+
+        groups = parser.parse_lines(lines)
+
+        expect(groups.size).to eq(1)
+        expect(groups.first.completed?).to be false
+      end
+    end
+  end
 end

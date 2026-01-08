@@ -31,8 +31,23 @@ module Trainspotter
 
     def initialize
       @db = SQLite3::Database.new(Trainspotter.database_path)
+      @db.busy_timeout = 5000
       @db.results_as_hash = true
       ensure_schema
+    end
+
+    class << self
+      def schema_initialized?
+        @schema_initialized
+      end
+
+      def schema_initialized!
+        @schema_initialized = true
+      end
+
+      def reset_schema!
+        @schema_initialized = false
+      end
     end
 
     def recent_requests(log_file:, limit: nil)
@@ -109,7 +124,13 @@ module Trainspotter
     private
 
     def ensure_schema
-      @db.execute_batch(SCHEMA)
+      return if self.class.schema_initialized?
+
+      @db.transaction do
+        @db.execute_batch(SCHEMA)
+      end
+
+      self.class.schema_initialized!
     end
 
     def get_file_position(log_file)

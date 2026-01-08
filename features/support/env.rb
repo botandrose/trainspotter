@@ -14,6 +14,7 @@ Before do
   # Clean up SQLite database before each scenario
   db_path = Rails.root.join("tmp", "trainspotter.sqlite3")
   FileUtils.rm_f(db_path)
+  Trainspotter::LogRepository.reset_schema!
 end
 
 After do

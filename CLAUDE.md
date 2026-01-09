@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Trainspotter is a zero-config Rails engine that provides a web-based log viewer with request grouping. It parses standard Rails logs and displays HTTP requests grouped with their SQL queries and view renders.
+Trainspotter is a zero-config Rails engine that provides a web-based log viewer with request grouping and session tracking. It parses standard Rails logs and displays HTTP requests grouped with their SQL queries and view renders, and can group requests into user sessions.
 
 ## Commands
 
@@ -14,8 +14,8 @@ bundle exec rspec
 bundle exec cucumber
 
 # Run a single RSpec file or example
-bundle exec rspec spec/models/trainspotter/log_parser_spec.rb
-bundle exec rspec spec/models/trainspotter/log_parser_spec.rb:15
+bundle exec rspec spec/models/trainspotter/ingest/parser_spec.rb
+bundle exec rspec spec/models/trainspotter/ingest/parser_spec.rb:15
 
 # Run a single Cucumber feature
 bundle exec cucumber features/viewing_logs.feature
@@ -29,29 +29,43 @@ bin/rubocop -a  # auto-fix
 
 This is a Rails Engine (mountable at any path, typically `/trainspotter`).
 
+### Database
+
+Trainspotter uses a separate SQLite database (`tmp/trainspotter.sqlite3`) to avoid impacting the main application. The `Record` base class handles connection management and schema creation using Rails conventions (`schema_migrations` table for versioning).
+
 ### Core Components
 
-**Log Parsing Pipeline:**
-- `LogReader` - Reads and tails log files, tracks file position for polling
-- `LogParser` - Parses Rails log lines using regex patterns, groups lines into requests
-- `LogEntry` - Single log line with type (`:request_start`, `:sql`, `:render`, `:request_end`, `:other`)
-- `RequestGroup` - Collection of entries for one HTTP request, provides accessors for method, path, status, duration, IP, etc.
+**Ingest Pipeline (`app/jobs/trainspotter/ingest/`):**
+- `IngestJob` - Background job that triggers log processing
+- `Processor` - Reads log files from last position, parses lines, persists to database
+- `Parser` - Parses Rails log lines using regex patterns, groups lines into requests
+- `Line` - Single log line with type (`:request_start`, `:sql`, `:render`, `:request_end`, `:other`)
+- `SessionBuilder` - Groups requests into sessions by IP, detects login/logout
 
-**Request Flow:**
-1. `LogsController#index` loads recent requests via `LogReader`
-2. JavaScript polls `LogsController#poll` for new entries
-3. Filtering happens server-side: asset paths filtered by default, optional IP filtering
+**Models (`app/models/trainspotter/`):**
+- `Record` - Abstract base class, manages SQLite connection and schema
+- `RequestRecord` - Persisted request with entries, status, duration, etc.
+- `SessionRecord` - User session (group of requests by IP within time window)
+- `FilePositionRecord` - Tracks read position in each log file
+- `Request` - In-memory request during parsing (not persisted directly)
 
-**Key Features:**
-- `SilentRequest` middleware silences Rails logger for `/trainspotter` requests (prevents log pollution)
-- `AnsiToHtml` converts ANSI color codes to styled HTML spans
-- `Trainspotter.filtered_paths` - configurable regex patterns to hide (assets, packs, etc.)
+**Controllers:**
+- `RequestsController` - Lists requests, handles polling for new entries
+- `SessionsController` - Lists sessions, shows session details
+
+### Request Flow
+
+1. `IngestJob` runs periodically or on-demand
+2. `Processor` reads new lines from log file, uses `Parser` to group into requests
+3. `RequestRecord.upsert_from_request` persists each request
+4. `SessionBuilder` assigns requests to sessions, detects login/logout
+5. `RequestsController#index` loads recent requests from database
+6. JavaScript polls `RequestsController#poll` for new entries via `since_id`
 
 ### Test Structure
 
 - `spec/dummy/` - Minimal Rails app for testing the engine
-- `spec/models/trainspotter/` - Unit tests for core models
-- `spec/lib/trainspotter/` - Tests for library code (filtering, middleware)
+- `spec/models/trainspotter/` - Unit tests for models and ingest pipeline
 - `features/` - Cucumber acceptance tests with Capybara/Cuprite
 
 ### Configuration
@@ -59,5 +73,5 @@ This is a Rails Engine (mountable at any path, typically `/trainspotter`).
 ```ruby
 Trainspotter.log_directory = "/custom/path"  # defaults to Rails.root/log
 Trainspotter.filtered_paths = [%r{^/admin/}] # replace default filters
-Trainspotter.reset_filters!                   # restore defaults
+Trainspotter.session_timeout = 30.minutes    # session inactivity timeout
 ```

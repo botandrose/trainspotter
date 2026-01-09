@@ -9,7 +9,7 @@ Feature: Selecting log files
       | development.log |
       | test.log        |
       | production.log  |
-    When I visit the trainspotter page
+    And I am on the trainspotter page
     Then the log selector should show "test.log" as selected
 
   Scenario: Viewing available log files
@@ -18,12 +18,11 @@ Feature: Selecting log files
       | development.log |
       | test.log        |
       | production.log  |
-    When I visit the trainspotter page
+    And I am on the trainspotter page
     Then I should see "development.log" in the log selector
     And I should see "test.log" in the log selector
     And I should see "production.log" in the log selector
 
-  @javascript
   Scenario: Switching to a different log file
     Given the following log files exist:
       | filename        |
@@ -31,7 +30,7 @@ Feature: Selecting log files
       | test.log        |
     And "development.log" contains a GET request to "/dev-endpoint"
     And "test.log" contains a GET request to "/test-endpoint"
-    When I visit the trainspotter page
+    And I am on the trainspotter page
     Then I should see a request group for "GET /test-endpoint"
     When I select "development.log" from the log selector
     Then I should see a request group for "GET /dev-endpoint"
@@ -44,7 +43,7 @@ Feature: Selecting log files
       | test.log        |
       | some_other.txt  |
       | debug.log       |
-    When I visit the trainspotter page
+    And I am on the trainspotter page
     Then I should see "development.log" in the log selector
     And I should see "test.log" in the log selector
     And I should see "debug.log" in the log selector

@@ -1,0 +1,28 @@
+<details class="session-group <%= session.ongoing? ? 'ongoing' : 'ended' %>" data-session-id="<%= session.id %>">
+  <summary class="session-summary">
+    <span class="session-identity">
+      <% if session.anonymous? %>
+        <span class="session-email anonymous">Anonymous</span>
+      <% else %>
+        <span class="session-email"><%= session.email %></span>
+      <% end %>
+    </span>
+    <span class="session-ip"><%= session.ip %></span>
+    <span class="session-meta">
+      <span class="session-request-count" title="<%= session.request_count %> requests">
+        <%= session.request_count %> req
+      </span>
+      <span class="session-status <%= session.ongoing? ? 'ongoing' : session.end_reason %>">
+        <%= session.ongoing? ? 'Active' : session.end_reason.capitalize %>
+      </span>
+      <span class="session-duration"><%= session.duration_display %></span>
+    </span>
+    <time class="session-time" title="<%= session.time_range_display %>">
+      <%= session.started_at&.strftime("%H:%M:%S") || "Unknown" %>
+    </time>
+  </summary>
+
+  <div class="session-requests">
+    <p class="loading-hint">Loading requests...</p>
+  </div>
+</details>

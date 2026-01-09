@@ -1,0 +1,125 @@
+<div class="trainspotter">
+  <header class="trainspotter-header">
+    <h1>🚂 Trainspotter</h1>
+    <div class="trainspotter-controls">
+      <% if @available_log_files.size > 1 %>
+        <select name="log_file" id="log_file" class="log-file-selector">
+          <% @available_log_files.each do |log_file| %>
+            <option value="<%= log_file %>" <%= "selected" if log_file == @current_log_file %>><%= log_file %></option>
+          <% end %>
+        </select>
+      <% else %>
+        <span class="current-log-file"><%= @current_log_file %></span>
+      <% end %>
+      <select name="ip" id="ip_filter" class="ip-filter-selector">
+        <option value="">All IPs</option>
+        <% @available_ips.each do |ip| %>
+          <option value="<%= ip %>" <%= "selected" if ip == @current_ip %>><%= ip %></option>
+        <% end %>
+      </select>
+      <label class="auto-scroll-toggle">
+        <input type="checkbox" id="auto-scroll" checked>
+        Auto-scroll
+      </label>
+      <span class="connection-status" id="connection-status">●</span>
+      <%= link_to "Sessions", sessions_path, class: "nav-link" %>
+    </div>
+  </header>
+
+  <main class="trainspotter-main">
+    <div class="request-list" id="request-list">
+      <% @requests.each do |request| %>
+        <%= render "trainspotter/requests/request", request: request %>
+      <% end %>
+    </div>
+
+    <% if @requests.empty? %>
+      <div class="empty-state">
+        <p>No requests found in the log file.</p>
+        <p class="hint">Make some requests to your Rails app to see them here.</p>
+      </div>
+    <% end %>
+  </main>
+</div>
+
+<script>
+(function() {
+  const requestList = document.getElementById('request-list');
+  const autoScrollCheckbox = document.getElementById('auto-scroll');
+  const connectionStatus = document.getElementById('connection-status');
+  const logFileSelector = document.getElementById('log_file');
+  const ipFilterSelector = document.getElementById('ip_filter');
+  let sinceId = '<%= @requests.first&.id || "" %>';
+  let currentLogFile = '<%= @current_log_file %>';
+  let currentIp = '<%= @current_ip || "" %>';
+  let polling = true;
+
+  function scrollToBottom() {
+    if (autoScrollCheckbox.checked) {
+      requestList.scrollTop = requestList.scrollHeight;
+    }
+  }
+
+  function buildUrl() {
+    const params = new URLSearchParams();
+    params.set('log_file', currentLogFile);
+    if (currentIp) params.set('ip', currentIp);
+    return '<%= root_path %>?' + params.toString();
+  }
+
+  function poll() {
+    if (!polling) return;
+
+    const params = new URLSearchParams();
+    params.set('log_file', currentLogFile);
+    if (sinceId) params.set('since_id', sinceId);
+    if (currentIp) params.set('ip', currentIp);
+
+    const url = '<%= poll_requests_path %>?' + params.toString();
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        if (data.requests && data.requests.length > 0) {
+          data.requests.forEach(html => {
+            // Safe: html is server-rendered via render_to_string with proper ERB escaping
+            requestList.insertAdjacentHTML('beforeend', html);
+          });
+          scrollToBottom();
+
+          const emptyState = document.querySelector('.empty-state');
+          if (emptyState) emptyState.remove();
+        }
+        if (data.since_id) {
+          sinceId = data.since_id;
+        }
+        connectionStatus.classList.remove('disconnected');
+        connectionStatus.classList.add('connected');
+      })
+      .catch(error => {
+        console.error('Polling error:', error);
+        connectionStatus.classList.remove('connected');
+        connectionStatus.classList.add('disconnected');
+      })
+      .finally(() => {
+        setTimeout(poll, 1000);
+      });
+  }
+
+  if (logFileSelector) {
+    logFileSelector.addEventListener('change', function() {
+      currentLogFile = this.value;
+      window.location.href = buildUrl();
+    });
+  }
+
+  if (ipFilterSelector) {
+    ipFilterSelector.addEventListener('change', function() {
+      currentIp = this.value;
+      window.location.href = buildUrl();
+    });
+  }
+
+  scrollToBottom();
+  poll();
+})();
+</script>

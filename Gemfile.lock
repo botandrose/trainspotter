@@ -2,7 +2,9 @@ PATH
   remote: .
   specs:
     trainspotter (0.1.0)
-      rails (>= 7.0)
+      concurrent-ruby
+      prism
+      rails (>= 8.0)
       sqlite3
 
 GEM

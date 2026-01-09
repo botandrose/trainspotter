@@ -1,12 +1,15 @@
 # Trainspotter
 
-A zero-config, web-based Rails log viewer with request grouping. See your Rails logs in a beautiful, organized interface right in your browser.
+A zero-config, web-based Rails log viewer with request grouping and session tracking. See your Rails logs in a beautiful, organized interface right in your browser.
 
 ## Features
 
 - **Zero configuration** - Just mount the engine and go
 - **Request grouping** - See HTTP requests with their associated SQL queries and view renders
+- **Session tracking** - Group requests by user session with automatic login/logout detection
 - **Real-time updates** - New requests appear automatically via polling
+- **Background processing** - Log ingestion runs in a background job
+- **SQLite storage** - Separate database for fast queries without impacting your app
 - **Dark/light mode** - Respects your system preference
 - **Performance at a glance** - See request duration, query count, and render count
 
@@ -30,7 +33,7 @@ Mount the engine in your `config/routes.rb`:
 
 ```ruby
 Rails.application.routes.draw do
-  mount Trainspotter::Engine => "/trainspotter"
+  mount Trainspotter::Engine => "/admin/logs"
 
   # Your other routes...
 end
@@ -69,22 +72,27 @@ end
 
 ## How It Works
 
-Trainspotter reads your Rails log file (`log/#{Rails.env}.log`) and parses the standard Rails log format. It groups related log lines into requests based on the "Started"/"Completed" pattern.
+Trainspotter reads your Rails log files and parses the standard Rails log format. A background job (`IngestJob`) processes new log entries and stores them in a separate SQLite database.
 
-Each request shows:
+**Requests View:**
 - HTTP method and path
 - Controller and action
 - Response status (color-coded)
 - Total duration
-- Number of SQL queries
-- Number of view renders
+- Number of SQL queries and view renders
+- Click to expand and see SQL queries and renders
 
-Click on a request to expand it and see all the SQL queries and view renders that happened during that request.
+**Sessions View:**
+- Groups requests by user session (based on IP + time window)
+- Automatic login/logout detection
+- See all requests made during a session
+
+Trainspotter supports tagged logging (`config.log_tags = [:request_id]`) for accurate request grouping in multi-threaded environments.
 
 ## Requirements
 
-- Rails 7.0+
-- Ruby 3.1+
+- Rails 8.0+
+- Ruby 3.3+
 
 ## Contributing
 

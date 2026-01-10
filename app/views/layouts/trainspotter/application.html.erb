@@ -8,9 +8,9 @@
   <%= yield :head %>
 
   <%= engine_stylesheet_link_tag "application" %>
-  <%= engine_javascript_importmap_tags "application", {
-    "@hotwired/stimulus" => "https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3/+esm"
-  } %>
+  <script type="module">
+    import * as Turbo from "https://cdn.jsdelivr.net/npm/@hotwired/turbo@8/+esm"
+  </script>
 </head>
 <body>
 

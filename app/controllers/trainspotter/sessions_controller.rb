@@ -13,12 +13,12 @@ module Trainspotter
     end
 
     def requests
+      session_record = SessionRecord.find(params[:id])
       requests = RequestRecord.for_session(params[:id], limit: 200)
       @requests = filter_requests(requests)
 
-      render json: {
-        requests: @requests.map { |r| render_to_string(partial: "trainspotter/requests/request", locals: { request: r }) }
-      }
+      render partial: "trainspotter/sessions/requests_frame",
+             locals: { session: session_record, requests: @requests }
     end
 
     private

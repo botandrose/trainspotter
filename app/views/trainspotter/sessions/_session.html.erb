@@ -1,4 +1,4 @@
-<details class="session-group <%= session.ongoing? ? 'ongoing' : 'ended' %>" data-session-id="<%= session.id %>" data-action="toggle->sessions#loadSession">
+<details class="session-group <%= session.ongoing? ? 'ongoing' : 'ended' %>">
   <summary class="session-summary">
     <span class="session-identity">
       <% if session.anonymous? %>
@@ -22,7 +22,11 @@
     </time>
   </summary>
 
-  <div class="session-requests">
-    <p class="loading-hint">Loading requests...</p>
-  </div>
+  <turbo-frame id="session_<%= session.id %>_requests"
+               src="<%= requests_session_path(session) %>"
+               loading="lazy">
+    <div class="session-requests">
+      <p class="loading-hint">Loading requests...</p>
+    </div>
+  </turbo-frame>
 </details>

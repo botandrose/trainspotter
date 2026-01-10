@@ -1,0 +1,11 @@
+<turbo-frame id="session_<%= session.id %>_requests">
+  <div class="session-requests">
+    <% if requests.empty? %>
+      <p class="empty-hint">No requests in this session.</p>
+    <% else %>
+      <% requests.each do |request| %>
+        <%= render "trainspotter/requests/request", request: request %>
+      <% end %>
+    <% end %>
+  </div>
+</turbo-frame>

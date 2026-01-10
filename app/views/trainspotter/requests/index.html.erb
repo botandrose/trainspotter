@@ -1,49 +1,68 @@
-<div class="trainspotter"
-     data-controller="requests"
-     data-requests-poll-url-value="<%= poll_requests_path %>"
-     data-requests-root-url-value="<%= root_path %>"
-     data-requests-since-id-value="<%= @requests.first&.id %>"
-     data-requests-log-file-value="<%= @current_log_file %>"
-     data-requests-ip-value="<%= @current_ip %>">
+<div class="trainspotter">
   <header class="trainspotter-header">
     <h1>Trainspotter</h1>
     <div class="trainspotter-controls">
-      <% if @available_log_files.size > 1 %>
-        <select name="log_file" class="log-file-selector" data-requests-target="logFile" data-action="change->requests#changeLogFile">
-          <% @available_log_files.each do |log_file| %>
-            <option value="<%= log_file %>" <%= "selected" if log_file == @current_log_file %>><%= log_file %></option>
-          <% end %>
-        </select>
-      <% else %>
-        <span class="current-log-file"><%= @current_log_file %></span>
-      <% end %>
-      <select name="ip" class="ip-filter-selector" data-requests-target="ipFilter" data-action="change->requests#changeIp">
-        <option value="">All IPs</option>
-        <% @available_ips.each do |ip| %>
-          <option value="<%= ip %>" <%= "selected" if ip == @current_ip %>><%= ip %></option>
+      <%= form_with url: requests_path, method: :get, data: { turbo_action: "replace" } do %>
+        <% if @available_log_files.size > 1 %>
+          <%= select_tag :log_file,
+              options_for_select(@available_log_files, @current_log_file),
+              class: "log-file-selector",
+              onchange: "this.form.requestSubmit()" %>
+        <% else %>
+          <span class="current-log-file"><%= @current_log_file %></span>
         <% end %>
-      </select>
+        <%= select_tag :ip,
+            options_for_select([["All IPs", ""]] + @available_ips.map { |ip| [ip, ip] }, @current_ip),
+            class: "ip-filter-selector",
+            onchange: "this.form.requestSubmit()" %>
+      <% end %>
       <label class="auto-scroll-toggle">
-        <input type="checkbox" checked data-requests-target="autoScroll">
+        <input type="checkbox" checked id="auto-scroll" onchange="window.trainspotterAutoScroll = this.checked">
         Auto-scroll
       </label>
-      <span class="connection-status" data-requests-target="status">●</span>
+      <span class="connection-status" id="connection-status">●</span>
       <%= link_to "Sessions", sessions_path, class: "nav-link" %>
     </div>
   </header>
 
   <main class="trainspotter-main">
-    <div class="request-list" data-requests-target="list">
+    <div class="request-list" id="request-list">
       <% @requests.each do |request| %>
         <%= render "trainspotter/requests/request", request: request %>
       <% end %>
     </div>
 
     <% if @requests.empty? %>
-      <div class="empty-state">
+      <div class="empty-state" id="empty-state">
         <p>No requests found in the log file.</p>
         <p class="hint">Make some requests to your Rails app to see them here.</p>
       </div>
     <% end %>
   </main>
 </div>
+
+<turbo-stream-source src="<%= stream_requests_path(log_file: @current_log_file, ip: @current_ip, since_id: @last_id) %>"></turbo-stream-source>
+
+<script>
+  window.trainspotterAutoScroll = true;
+
+  document.addEventListener("turbo:before-stream-render", (event) => {
+    document.getElementById("connection-status")?.classList.add("connected");
+    document.getElementById("connection-status")?.classList.remove("disconnected");
+
+    if (window.trainspotterAutoScroll && event.target.action === "append") {
+      requestAnimationFrame(() => {
+        const list = document.getElementById("request-list");
+        if (list) list.scrollTop = list.scrollHeight;
+      });
+    }
+  });
+
+  const source = document.querySelector("turbo-stream-source");
+  if (source) {
+    source.addEventListener("error", () => {
+      document.getElementById("connection-status")?.classList.remove("connected");
+      document.getElementById("connection-status")?.classList.add("disconnected");
+    });
+  }
+</script>

@@ -3,7 +3,7 @@ Trainspotter::Engine.routes.draw do
 
   resources :requests, only: [:index] do
     collection do
-      get :poll
+      get :stream
     end
   end
 

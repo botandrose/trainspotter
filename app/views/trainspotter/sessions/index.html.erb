@@ -1,22 +1,22 @@
-<div class="trainspotter"
-     data-controller="sessions"
-     data-sessions-sessions-url-value="<%= sessions_path %>">
+<div class="trainspotter">
   <header class="trainspotter-header">
     <h1>Trainspotter - Sessions</h1>
     <div class="trainspotter-controls">
-      <% if @available_log_files.size > 1 %>
-        <select name="log_file" class="log-file-selector" data-sessions-target="logFile" data-action="change->sessions#changeLogFile">
-          <% @available_log_files.each do |log_file| %>
-            <option value="<%= log_file %>" <%= "selected" if log_file == @current_log_file %>><%= log_file %></option>
-          <% end %>
-        </select>
-      <% else %>
-        <span class="current-log-file"><%= @current_log_file %></span>
+      <%= form_with url: sessions_path, method: :get, data: { turbo_action: "replace" } do %>
+        <% if @available_log_files.size > 1 %>
+          <%= select_tag :log_file,
+              options_for_select(@available_log_files, @current_log_file),
+              class: "log-file-selector",
+              onchange: "this.form.requestSubmit()" %>
+        <% else %>
+          <span class="current-log-file"><%= @current_log_file %></span>
+        <% end %>
+        <label class="show-anonymous-toggle">
+          <%= check_box_tag :show_anonymous, "1", @show_anonymous,
+              onchange: "this.form.requestSubmit()" %>
+          Show anonymous
+        </label>
       <% end %>
-      <label class="show-anonymous-toggle">
-        <input type="checkbox" <%= "checked" if @show_anonymous %> data-sessions-target="showAnonymous" data-action="change->sessions#changeShowAnonymous">
-        Show anonymous
-      </label>
       <%= link_to "Requests", requests_path, class: "nav-link" %>
     </div>
   </header>

@@ -7,3 +7,7 @@ end
 Capybara.default_driver = :cuprite
 
 ActionController::Base.allow_rescue = true
+
+Before do
+  page.driver.browser.url_blocklist = %r{/requests/stream}
+end

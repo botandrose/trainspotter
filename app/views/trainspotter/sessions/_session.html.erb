@@ -22,9 +22,7 @@
     </time>
   </summary>
 
-  <turbo-frame id="session_<%= session.id %>_requests"
-               src="<%= requests_session_path(session) %>"
-               loading="lazy">
+  <turbo-frame id="session_<%= session.id %>_requests" src="<%= requests_session_path(session) %>">
     <div class="session-requests">
       <p class="loading-hint">Loading requests...</p>
     </div>

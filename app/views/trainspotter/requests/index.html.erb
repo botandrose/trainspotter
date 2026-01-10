@@ -42,27 +42,3 @@
 </div>
 
 <turbo-stream-source src="<%= stream_requests_path(log_file: @current_log_file, ip: @current_ip, since_id: @last_id) %>"></turbo-stream-source>
-
-<script>
-  window.trainspotterAutoScroll = true;
-
-  document.addEventListener("turbo:before-stream-render", (event) => {
-    document.getElementById("connection-status")?.classList.add("connected");
-    document.getElementById("connection-status")?.classList.remove("disconnected");
-
-    if (window.trainspotterAutoScroll && event.target.action === "append") {
-      requestAnimationFrame(() => {
-        const list = document.getElementById("request-list");
-        if (list) list.scrollTop = list.scrollHeight;
-      });
-    }
-  });
-
-  const source = document.querySelector("turbo-stream-source");
-  if (source) {
-    source.addEventListener("error", () => {
-      document.getElementById("connection-status")?.classList.remove("connected");
-      document.getElementById("connection-status")?.classList.add("disconnected");
-    });
-  }
-</script>

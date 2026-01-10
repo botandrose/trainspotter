@@ -14,6 +14,3 @@ group :development, :test do
   gem "cucumber-rails", require: false
   gem "database_cleaner-active_record"
 end
-
-# Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
-gem "rubocop-rails-omakase", require: false

@@ -20,11 +20,6 @@ bundle exec rspec spec/models/trainspotter/ingest/parser_spec.rb:15
 # Run a single Cucumber feature
 bundle exec cucumber features/viewing_logs.feature
 
-# Lint
-bin/rubocop
-bin/rubocop -a  # auto-fix
-```
-
 ## Architecture
 
 This is a Rails Engine (mountable at any path, typically `/trainspotter`).

@@ -3,3 +3,5 @@
 /log/*.log
 /pkg/
 /tmp/
+Gemfile.lock
+gemfiles/*.lock

@@ -1,10 +1,7 @@
 module Trainspotter
   class Engine < ::Rails::Engine
     isolate_namespace Trainspotter
-
-    initializer "trainspotter.assets.precompile" do |app|
-      app.config.assets.precompile += %w[trainspotter/application.css]
-    end
+    isolate_assets
 
     initializer "trainspotter.silence_requests" do
       config.after_initialize { Engine.silence_engine_requests }

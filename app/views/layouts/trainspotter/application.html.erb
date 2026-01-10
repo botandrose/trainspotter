@@ -7,7 +7,10 @@
 
   <%= yield :head %>
 
-  <%= stylesheet_link_tag    "trainspotter/application", media: "all" %>
+  <%= engine_stylesheet_link_tag "application" %>
+  <%= engine_javascript_importmap_tags "application", {
+    "@hotwired/stimulus" => "https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3/+esm"
+  } %>
 </head>
 <body>
 

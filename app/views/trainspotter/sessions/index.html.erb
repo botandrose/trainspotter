@@ -1,9 +1,11 @@
-<div class="trainspotter">
+<div class="trainspotter"
+     data-controller="sessions"
+     data-sessions-sessions-url-value="<%= sessions_path %>">
   <header class="trainspotter-header">
     <h1>Trainspotter - Sessions</h1>
     <div class="trainspotter-controls">
       <% if @available_log_files.size > 1 %>
-        <select name="log_file" id="log_file" class="log-file-selector">
+        <select name="log_file" class="log-file-selector" data-sessions-target="logFile" data-action="change->sessions#changeLogFile">
           <% @available_log_files.each do |log_file| %>
             <option value="<%= log_file %>" <%= "selected" if log_file == @current_log_file %>><%= log_file %></option>
           <% end %>
@@ -12,7 +14,7 @@
         <span class="current-log-file"><%= @current_log_file %></span>
       <% end %>
       <label class="show-anonymous-toggle">
-        <input type="checkbox" id="show-anonymous" <%= "checked" if @show_anonymous %>>
+        <input type="checkbox" <%= "checked" if @show_anonymous %> data-sessions-target="showAnonymous" data-action="change->sessions#changeShowAnonymous">
         Show anonymous
       </label>
       <%= link_to "Requests", requests_path, class: "nav-link" %>
@@ -20,7 +22,7 @@
   </header>
 
   <main class="trainspotter-main">
-    <div class="session-list" id="session-list">
+    <div class="session-list">
       <% @sessions.each do |session| %>
         <%= render "trainspotter/sessions/session", session: session %>
       <% end %>
@@ -38,55 +40,3 @@
     <% end %>
   </main>
 </div>
-
-<script>
-(function() {
-  const logFileSelector = document.getElementById('log_file');
-  const showAnonymousCheckbox = document.getElementById('show-anonymous');
-
-  function buildUrl() {
-    const params = new URLSearchParams();
-    if (logFileSelector) params.set('log_file', logFileSelector.value);
-    if (showAnonymousCheckbox && showAnonymousCheckbox.checked) params.set('show_anonymous', '1');
-    return '<%= sessions_path %>?' + params.toString();
-  }
-
-  if (logFileSelector) {
-    logFileSelector.addEventListener('change', function() {
-      window.location.href = buildUrl();
-    });
-  }
-
-  if (showAnonymousCheckbox) {
-    showAnonymousCheckbox.addEventListener('change', function() {
-      window.location.href = buildUrl();
-    });
-  }
-
-  document.querySelectorAll('.session-group').forEach(function(sessionEl) {
-    const summary = sessionEl.querySelector('summary');
-    const details = sessionEl.querySelector('.session-requests');
-    const sessionId = sessionEl.dataset.sessionId;
-    let loaded = false;
-
-    sessionEl.addEventListener('toggle', function() {
-      if (sessionEl.open && !loaded) {
-        loaded = true;
-        fetch('<%= sessions_path %>/' + sessionId + '/requests')
-          .then(response => response.json())
-          .then(data => {
-            if (data.requests && data.requests.length > 0) {
-              // Safe: html is server-rendered via render_to_string with proper ERB escaping
-              details.innerHTML = data.requests.join('');
-            } else {
-              details.innerHTML = '<p class="empty-hint">No requests in this session.</p>';
-            }
-          })
-          .catch(error => {
-            details.innerHTML = '<p class="error-hint">Failed to load requests.</p>';
-          });
-      }
-    });
-  });
-})();
-</script>

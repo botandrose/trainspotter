@@ -1,4 +1,4 @@
-<details class="session-group <%= session.ongoing? ? 'ongoing' : 'ended' %>" data-session-id="<%= session.id %>">
+<details class="session-group <%= session.ongoing? ? 'ongoing' : 'ended' %>" data-session-id="<%= session.id %>" data-action="toggle->sessions#loadSession">
   <summary class="session-summary">
     <span class="session-identity">
       <% if session.anonymous? %>

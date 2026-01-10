@@ -1,9 +1,11 @@
 require "trainspotter/version"
 require "trainspotter/configuration"
+require "isolate_assets"
 require "trainspotter/engine"
 require "trainspotter/background_worker"
 
 module Trainspotter
+
   class << self
     def configuration
       @configuration ||= Configuration.new

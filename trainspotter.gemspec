@@ -23,4 +23,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "sqlite3"
   spec.add_dependency "prism"
   spec.add_dependency "concurrent-ruby"
+  spec.add_dependency "isolate_assets"
 end

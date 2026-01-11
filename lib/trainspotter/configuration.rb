@@ -22,7 +22,7 @@ module Trainspotter
 
     setting(:filtered_paths) do
       [
-        %r{^/assets/},
+        %r{/assets/},
         %r{^/packs/},
         %r{^/vite/},
         %r{^/rails/active_storage/},

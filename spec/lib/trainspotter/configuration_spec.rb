@@ -61,7 +61,7 @@ RSpec.describe Trainspotter::Configuration do
 
   describe "#filtered_paths" do
     it "returns default filtered paths" do
-      expect(config.filtered_paths).to include(%r{^/assets/})
+      expect(config.filtered_paths).to include(%r{/assets/})
     end
 
     it "can be customized" do

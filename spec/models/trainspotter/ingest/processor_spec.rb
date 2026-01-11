@@ -19,9 +19,9 @@ RSpec.describe Trainspotter::Ingest::Processor do
     FileUtils.remove_entry(temp_dir) rescue nil
   end
 
-  def write_request(file, id:, method: "GET", path: "/", status: 200)
+  def write_request(file, id:, method: "GET", path: "/", status: 200, controller: "TestController", action: "index")
     file.puts "Started #{method} \"#{path}\" for 127.0.0.1 at 2024-01-15 10:00:00 +0000"
-    file.puts "Processing by TestController#index as HTML"
+    file.puts "Processing by #{controller}##{action} as HTML"
     file.puts "Completed #{status} OK in 50ms"
     file.puts ""
   end
@@ -91,6 +91,18 @@ RSpec.describe Trainspotter::Ingest::Processor do
       new_position = Trainspotter::FilePositionRecord.get_position("test.log")
 
       expect(new_position).to be < original_position
+    end
+
+    it "correctly captures namespaced controller names like Trainspotter::RequestsController" do
+      File.open(log_path, "w") do |f|
+        write_request(f, id: "req1", path: "/trainspotter/requests", controller: "Trainspotter::RequestsController")
+      end
+
+      described_class.call([log_path])
+
+      record = Trainspotter::RequestRecord.first
+      expect(record.controller).to eq("Trainspotter::RequestsController")
+      expect(Trainspotter.internal_request?(record)).to be true
     end
   end
 end

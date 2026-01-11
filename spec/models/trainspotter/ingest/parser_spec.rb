@@ -42,6 +42,15 @@ RSpec.describe Trainspotter::Ingest::Parser do
         expect(entry.metadata[:action]).to eq("index")
         expect(entry.metadata[:format]).to eq("HTML")
       end
+
+      it "handles namespaced controllers" do
+        parser.parse_line('Started GET "/trainspotter" for 127.0.0.1 at 2024-01-06 10:00:00 +0000')
+        entry = parser.parse_line("Processing by Trainspotter::RequestsController#index as HTML")
+
+        expect(entry.type).to eq(:processing)
+        expect(entry.metadata[:controller]).to eq("Trainspotter::RequestsController")
+        expect(entry.metadata[:action]).to eq("index")
+      end
     end
 
     context "with SQL query line" do

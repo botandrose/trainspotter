@@ -17,8 +17,8 @@
       </span>
       <span class="session-duration"><%= session.duration_display %></span>
     </span>
-    <time class="session-time" title="<%= session.time_range_display %>">
-      <%= session.started_at&.strftime("%H:%M:%S") || "Unknown" %>
+    <time class="session-time" title="Started: <%= session.started_at&.strftime("%Y-%m-%d %H:%M:%S") %>">
+      <%= session.started_at&.strftime("%b %d %H:%M") || "Unknown" %> - <%= session.ended_at&.strftime("%H:%M") || "now" %>
     </time>
   </summary>
 

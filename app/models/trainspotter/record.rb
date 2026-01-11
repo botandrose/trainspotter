@@ -74,6 +74,7 @@ module Trainspotter
 
           t.index [:ip, :started_at], order: { started_at: :desc }, name: "idx_sessions_ip_started_at", if_not_exists: true
           t.index :log_file, name: "idx_sessions_log_file", if_not_exists: true
+          t.index [:log_file, :ended_at], order: { ended_at: :desc }, name: "idx_sessions_log_file_ended_at", if_not_exists: true
         end
 
         connection.create_table :file_positions, id: false, if_not_exists: true do |t|

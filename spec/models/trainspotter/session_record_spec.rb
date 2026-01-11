@@ -51,14 +51,37 @@ RSpec.describe Trainspotter::SessionRecord do
   describe ".recent" do
     let(:started_at) { Time.new(2024, 1, 15, 10, 0, 0) }
 
-    it "returns sessions ordered by started_at descending" do
-      described_class.create!(ip: "192.168.1.1", log_file: "test.log", started_at: started_at, email: "first@example.com")
-      described_class.create!(ip: "192.168.1.2", log_file: "test.log", started_at: started_at + 60, email: "second@example.com")
+    it "returns sessions ordered by ended_at descending" do
+      described_class.create!(ip: "192.168.1.1", log_file: "test.log", started_at: started_at, ended_at: started_at + 300, email: "first@example.com")
+      described_class.create!(ip: "192.168.1.2", log_file: "test.log", started_at: started_at + 60, ended_at: started_at + 600, email: "second@example.com")
 
       sessions = described_class.recent(log_file: "test.log")
 
       expect(sessions.length).to eq(2)
       expect(sessions.first.email).to eq("second@example.com")
+    end
+
+    it "orders sessions spanning multiple days correctly by ended_at" do
+      # Create sessions across multiple days with varying end times
+      jan_10_morning = Time.new(2024, 1, 10, 10, 50, 5)
+      jan_10_earlier = Time.new(2024, 1, 10, 10, 27, 11)
+      jan_9_evening = Time.new(2024, 1, 9, 21, 1, 50)
+      jan_9_afternoon = Time.new(2024, 1, 9, 18, 34, 31)
+
+      # Create in random order to ensure sorting works
+      described_class.create!(ip: "192.168.1.1", log_file: "test.log", started_at: jan_9_afternoon - 300, ended_at: jan_9_afternoon, email: "fourth@example.com")
+      described_class.create!(ip: "192.168.1.2", log_file: "test.log", started_at: jan_10_morning - 300, ended_at: jan_10_morning, email: "first@example.com")
+      described_class.create!(ip: "192.168.1.3", log_file: "test.log", started_at: jan_9_evening - 300, ended_at: jan_9_evening, email: "third@example.com")
+      described_class.create!(ip: "192.168.1.4", log_file: "test.log", started_at: jan_10_earlier - 300, ended_at: jan_10_earlier, email: "second@example.com")
+
+      sessions = described_class.recent(log_file: "test.log")
+
+      expect(sessions.map(&:email)).to eq([
+        "first@example.com",   # ended Jan 10 10:50:05 (newest)
+        "second@example.com",  # ended Jan 10 10:27:11
+        "third@example.com",   # ended Jan 9 21:01:50
+        "fourth@example.com"   # ended Jan 9 18:34:31 (oldest)
+      ])
     end
 
     it "excludes anonymous sessions by default" do

@@ -11,7 +11,7 @@ module Trainspotter
     scope :ongoing, -> { where(end_reason: "ongoing") }
 
     scope :recent, ->(log_file:, include_anonymous: false, limit: 50) {
-      scope = for_log_file(log_file).order(started_at: :desc).limit(limit)
+      scope = for_log_file(log_file).order(ended_at: :desc).limit(limit)
       include_anonymous ? scope : scope.identified
     }
 
